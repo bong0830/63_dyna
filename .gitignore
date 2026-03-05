@@ -1,0 +1,24 @@
+.vscode/
+
+# LS-DYNA runtime/output files (root)
+adptmp
+group_file
+d3hsp
+dyna.lsda
+messag
+lsrun.out.txt
+
+# LS-DYNA runtime/output files (kfiles_split)
+kfiles_split/d3*
+kfiles_split/dyna.*
+kfiles_split/group_file
+kfiles_split/messag
+kfiles_split/lsrun.out.txt
+kfiles_split/lsrunid
+kfiles_split/status.out
+kfiles_split/qrun.inf
+kfiles_split/lspost.*
+kfiles_split/lspost*.db
+kfiles_out/lspost*.db
+kfiles_split/_*.k
+kfiles_split/_*.out.txt
