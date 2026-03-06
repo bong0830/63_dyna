@@ -1,4 +1,4 @@
-#!/usr/bin/env julia
+﻿#!/usr/bin/env julia
 
 struct MainParams
     outdir::String
@@ -8,6 +8,15 @@ struct MainParams
     punch_down_ratio::Float64
     fs::Float64
     fd::Float64
+    plate_rho::Float64
+    plate_e::Float64
+    plate_nu::Float64
+    plate_sigy::Float64
+    plate_etan::Float64
+    plate_beta::Float64
+    tool_rho::Float64
+    tool_e::Float64
+    tool_nu::Float64
     plate_xsym_sid::Int
     plate_ysym_sid::Int
     punch_all_sid::Int
@@ -37,6 +46,15 @@ function parse_args(args::Vector{String})
         getf("punch_down_ratio", 0.5),
         getf("fs", 0.10),
         getf("fd", 0.08),
+        getf("plate_rho", 7.85e-9),
+        getf("plate_e", 210000.0),
+        getf("plate_nu", 0.30),
+        getf("plate_sigy", 350.0),
+        getf("plate_etan", 1200.0),
+        getf("plate_beta", 0.0),
+        getf("tool_rho", 7.85e-9),
+        getf("tool_e", 2.10e8),
+        getf("tool_nu", 0.30),
         geti("plate_xsym_sid", 10001),
         geti("plate_ysym_sid", 10002),
         geti("punch_all_sid", 20100),
@@ -67,12 +85,13 @@ function write_main_kfile(path::String, p::MainParams)
         println(io, "2,2,0.8333,5")
         println(io, "2.0,2.0,2.0,2.0")
 
+        println(io, "*MAT_PLASTIC_KINEMATIC")
+        println(io, "1,$(p.plate_rho),$(p.plate_e),$(p.plate_nu),$(p.plate_sigy),$(p.plate_etan),$(p.plate_beta)")
+        println(io, "0,0,0,0,0,0,0,0")
         println(io, "*MAT_ELASTIC")
-        println(io, "1,7.85e-9,210000.0,0.30")
+        println(io, "2,$(p.tool_rho),$(p.tool_e),$(p.tool_nu)")
         println(io, "*MAT_ELASTIC")
-        println(io, "2,7.85e-9,2.10e8,0.30")
-        println(io, "*MAT_ELASTIC")
-        println(io, "3,7.85e-9,2.10e8,0.30")
+        println(io, "3,$(p.tool_rho),$(p.tool_e),$(p.tool_nu)")
 
         println(io, "*PART")
         println(io, "Plate")
@@ -137,3 +156,7 @@ function main()
 end
 
 main()
+
+
+
+

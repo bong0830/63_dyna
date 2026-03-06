@@ -6,12 +6,13 @@ Quarter model edge bending with y-axis cylinder punch
 *SECTION_SHELL
 2,2,0.8333,5
 2.0,2.0,2.0,2.0
+*MAT_PLASTIC_KINEMATIC
+1,7.85e-9,210000.0,0.3,350.0,1200.0,0.0
+0,0,0,0,0,0,0,0
 *MAT_ELASTIC
-1,7.85e-9,210000.0,0.30
+2,7.85e-9,2.1e8,0.3
 *MAT_ELASTIC
-2,7.85e-9,2.10e8,0.30
-*MAT_ELASTIC
-3,7.85e-9,2.10e8,0.30
+3,7.85e-9,2.1e8,0.3
 *PART
 Plate
 1,1,1,0,0,0,0,0
