@@ -12,6 +12,7 @@ struct ModelParams
     die_x::Float64
     punch_gap::Float64
     die_gap::Float64
+    tool_shell_t::Float64
     plate_nx::Int
     plate_ny::Int
     plate_nz::Int
@@ -89,6 +90,7 @@ function parse_args(args::Vector{String})
         getf("die_x", 70.0),
         getf("punch_gap", 0.2),
         getf("die_gap", 0.2),
+        getf("tool_shell_t", 2.0),
         geti("plate_nx", 30),
         geti("plate_ny", 30),
         geti("plate_nz", 3),
@@ -110,6 +112,7 @@ function validate(p::ModelParams)
     p.die_x >= 0 || error("die_x must be >= 0")
     p.punch_gap >= 0 || error("punch_gap must be >= 0")
     p.die_gap >= 0 || error("die_gap must be >= 0")
+    p.tool_shell_t >= 0 || error("tool_shell_t must be >= 0")
 
     p.plate_nx >= 2 || error("plate_nx must be >= 2")
     p.plate_ny >= 2 || error("plate_ny must be >= 2")
@@ -327,8 +330,9 @@ function generate_mesh_files(p::ModelParams)
     punch_r = p.punch_d / 2.0
     die_r = p.die_d / 2.0
 
-    punch_centerline_z = p.plate_t + p.punch_gap + punch_r
-    die_centerline_z = -p.die_gap - die_r
+    tool_half_t = p.tool_shell_t / 2.0
+    punch_centerline_z = p.plate_t + p.punch_gap + tool_half_t + punch_r
+    die_centerline_z = -p.die_gap - tool_half_t - die_r
 
     punch = generate_cylinder_shell_y(
         punch_r,
@@ -381,4 +385,6 @@ function main()
     generate_mesh_files(p)
 end
 
-main()
+if abspath(PROGRAM_FILE) == @__FILE__
+    main()
+end

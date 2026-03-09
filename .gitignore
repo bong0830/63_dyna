@@ -1,5 +1,9 @@
 .vscode/
 
+# Generated analysis case folders
+cases/*/
+!cases/case_manifest.csv
+
 # LS-DYNA runtime/output files (root)
 adptmp
 group_file
@@ -9,6 +13,7 @@ messag
 lsrun.out.txt
 
 # LS-DYNA runtime/output files (kfiles_split)
+kfiles_split/*.k
 kfiles_split/d3*
 kfiles_split/dyna.*
 kfiles_split/group_file

@@ -5,6 +5,8 @@ using Printf
 
 const DEFAULT_DYNA_EXE = raw"C:\LSDYNA\program\ls-dyna_smp_d_R11_1_0_winx64_ifort160.exe"
 const DEFAULT_CASE_KEYS = ["plate_t", "punch_d", "die_d", "punch_disp_down"]
+const NORMAL_TERMINATION_MARKERS = ["Normal termination", "*** termination time reached ***"]
+const ERROR_TERMINATION_MARKERS = ["E r r o r   t e r m i n a t i o n", "input data failed", "fatal error"]
 const MANIFEST_COLUMNS = [
     "created_at",
     "updated_at",
@@ -25,6 +27,7 @@ const MANIFEST_COLUMNS = [
     "die_x",
     "punch_gap",
     "die_gap",
+    "tool_shell_t",
     "plate_nx",
     "plate_ny",
     "plate_nz",
@@ -35,6 +38,9 @@ const MANIFEST_COLUMNS = [
     "t_end",
     "punch_disp_down",
     "punch_down_ratio",
+    "punch_hold_ratio",
+    "punch_final_disp",
+    "d3plot_dt",
     "fs",
     "fd",
     "plate_rho",
@@ -46,6 +52,8 @@ const MANIFEST_COLUMNS = [
     "tool_rho",
     "tool_e",
     "tool_nu",
+    "tool_rigid",
+    "mass_scaling_dt",
     "ncpu",
     "memory",
     "dyna_exe",
@@ -62,8 +70,12 @@ const DEFAULT_VALUES = Dict(
     "die_x" => "70",
     "punch_gap" => "0.2",
     "die_gap" => "0.2",
+    "tool_shell_t" => "2.0",
     "t_end" => "0.01",
     "punch_down_ratio" => "0.5",
+    "punch_hold_ratio" => "0.0",
+    "punch_final_disp" => "0.0",
+    "d3plot_dt" => "1.0e-4",
     "fs" => "0.10",
     "fd" => "0.08",
     "plate_nx" => "30",
@@ -82,6 +94,8 @@ const DEFAULT_VALUES = Dict(
     "tool_rho" => "7.85e-9",
     "tool_e" => "2.10e8",
     "tool_nu" => "0.30",
+    "tool_rigid" => "false",
+    "mass_scaling_dt" => "0.0",
 )
 
 function parse_kv_args(args::Vector{String})
@@ -112,8 +126,8 @@ function split_csv(value::String)
     return items
 end
 
-function sanitize_case_name(value::String)
-    cleaned = replace(strip(value), r"[<>:\"/\\|?*]" => "-")
+function sanitize_case_name(value::AbstractString)
+    cleaned = replace(strip(String(value)), r"[<>:\"/\\|?*]" => "-")
     cleaned = replace(cleaned, r"\s+" => "-")
     return isempty(cleaned) ? "case" : cleaned
 end
@@ -413,6 +427,18 @@ function run_analysis_in_case_dir(case_dir::String)
     end
 end
 
+function detect_analysis_status(case_dir::String)
+    output_path = joinpath(case_dir, "lsrun.out.txt")
+    if !isfile(output_path)
+        return "failed"
+    end
+
+    output_text = lowercase(read(output_path, String))
+    any(marker -> occursin(lowercase(marker), output_text), ERROR_TERMINATION_MARKERS) && return "failed"
+    any(marker -> occursin(lowercase(marker), output_text), NORMAL_TERMINATION_MARKERS) && return "finished"
+    return "finished_unknown"
+end
+
 function main()
     kv = parse_kv_args(ARGS)
 
@@ -456,9 +482,14 @@ function main()
     if run_analysis
         println("Running LS-DYNA in case directory...")
         run_analysis_in_case_dir(case_dir)
-        upsert_manifest(manifest_path, kv, case_name, case_dir, case_keys, "finished")
-        println("Analysis finished:")
-        println("- $(abspath(case_dir))")
+        analysis_status = detect_analysis_status(case_dir)
+        upsert_manifest(manifest_path, kv, case_name, case_dir, case_keys, analysis_status)
+        if analysis_status == "finished"
+            println("Analysis finished:")
+            println("- $(abspath(case_dir))")
+        else
+            error("LS-DYNA run did not finish normally (status=$analysis_status). Check logs in $(abspath(case_dir)).")
+        end
     else
         println("Analysis was skipped because run=false.")
     end
