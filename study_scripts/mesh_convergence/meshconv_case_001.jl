@@ -17,7 +17,7 @@ run_user_case([
     "mass_scaling_dt=5e-06",
     "gravity_z=0.0",
     "ncpu=30",
-    "memory=6250m",
+    "memory=180000m",
     "case_name=meshconv_001",
     "case_version=v001",
     "case_keys=die_gap,punch_disp_down,punch_press_speed",

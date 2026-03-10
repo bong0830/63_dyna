@@ -22,7 +22,7 @@ const BASE_OVERRIDES = Pair{String,String}[
     "mass_scaling_dt"=>"5e-06",
     "gravity_z"=>"0.0",
     "ncpu"=>"30",
-    "memory"=>"6250m",
+    "memory"=>"180000m",
 ]
 
 const MESH_LEVELS = [
