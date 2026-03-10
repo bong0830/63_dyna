@@ -16,6 +16,8 @@ run_user_case([
     "tool_shell_t=2.0",
     "mass_scaling_dt=5e-06",
     "gravity_z=0.0",
+    "ncpu=30",
+    "memory=50g",
     "case_name=meshconv_002",
     "case_version=v002",
     "case_keys=die_gap,punch_disp_down,punch_press_speed",

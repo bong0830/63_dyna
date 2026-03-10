@@ -7,29 +7,36 @@ const MESH_SCRIPT_DIR = joinpath(ROOT, "study_scripts", "mesh_convergence")
 const PARAM_SCRIPT_DIR = joinpath(ROOT, "study_scripts", "param_study")
 const PLAN_DIR = joinpath(ROOT, "study_plans")
 
-const BASE_OVERRIDES = Pair{String, String}[
-    "run" => "false",
-    "allow_existing" => "true",
-    "cases_root" => "cases",
-    "manifest_path" => "cases/case_manifest.csv",
-    "punch_control_mode" => "disp",
-    "punch_hold_time" => "0.2",
-    "punch_press_time" => "0.0",
-    "punch_release_time" => "0.0",
-    "punch_release_speed" => "0.0",
-    "punch_gap" => "0.2",
-    "tool_shell_t" => "2.0",
-    "mass_scaling_dt" => "5e-06",
-    "gravity_z" => "0.0",
+const BASE_OVERRIDES = Pair{String,String}[
+    "run"=>"false",
+    "allow_existing"=>"true",
+    "cases_root"=>"cases",
+    "manifest_path"=>"cases/case_manifest.csv",
+    "punch_control_mode"=>"disp",
+    "punch_hold_time"=>"0.2",
+    "punch_press_time"=>"0.0",
+    "punch_release_time"=>"0.0",
+    "punch_release_speed"=>"0.0",
+    "punch_gap"=>"0.2",
+    "tool_shell_t"=>"2.0",
+    "mass_scaling_dt"=>"5e-06",
+    "gravity_z"=>"0.0",
+    "ncpu"=>"30",
+    "memory"=>"50g",
 ]
 
 const MESH_LEVELS = [
-    (case_no = 1, tag = "m01", plate_nx = 10, plate_ny = 10, plate_nz = 1, punch_ntheta = 16, punch_ny = 16, die_ntheta = 16, die_ny = 16),
-    (case_no = 2, tag = "m02", plate_nx = 14, plate_ny = 14, plate_nz = 1, punch_ntheta = 20, punch_ny = 20, die_ntheta = 20, die_ny = 20),
-    (case_no = 3, tag = "m03", plate_nx = 18, plate_ny = 18, plate_nz = 2, punch_ntheta = 24, punch_ny = 24, die_ntheta = 24, die_ny = 24),
-    (case_no = 4, tag = "m04", plate_nx = 24, plate_ny = 24, plate_nz = 2, punch_ntheta = 28, punch_ny = 28, die_ntheta = 28, die_ny = 28),
-    (case_no = 5, tag = "m05", plate_nx = 30, plate_ny = 30, plate_nz = 3, punch_ntheta = 32, punch_ny = 30, die_ntheta = 32, die_ny = 30),
-    (case_no = 6, tag = "m06", plate_nx = 36, plate_ny = 36, plate_nz = 4, punch_ntheta = 36, punch_ny = 36, die_ntheta = 36, die_ny = 36),
+    (case_no=1, tag="m01", plate_nx=10, plate_ny=10, plate_nz=1, punch_ntheta=16, punch_ny=16, die_ntheta=16, die_ny=16),
+    (case_no=2, tag="m02", plate_nx=14, plate_ny=14, plate_nz=1, punch_ntheta=20, punch_ny=20, die_ntheta=20, die_ny=20),
+    (case_no=3, tag="m03", plate_nx=18, plate_ny=18, plate_nz=2, punch_ntheta=24, punch_ny=24, die_ntheta=24, die_ny=24),
+    (case_no=4, tag="m04", plate_nx=24, plate_ny=24, plate_nz=2, punch_ntheta=28, punch_ny=28, die_ntheta=28, die_ny=28),
+    (case_no=5, tag="m05", plate_nx=30, plate_ny=30, plate_nz=3, punch_ntheta=32, punch_ny=30, die_ntheta=32, die_ny=30),
+    (case_no=6, tag="m06", plate_nx=36, plate_ny=36, plate_nz=4, punch_ntheta=36, punch_ny=36, die_ntheta=36, die_ny=36),
+    (case_no=7, tag="m07", plate_nx=20, plate_ny=20, plate_nz=2, punch_ntheta=24, punch_ny=24, die_ntheta=24, die_ny=24),
+    (case_no=8, tag="m08", plate_nx=20, plate_ny=20, plate_nz=3, punch_ntheta=24, punch_ny=24, die_ntheta=24, die_ny=24),
+    (case_no=9, tag="m09", plate_nx=30, plate_ny=30, plate_nz=3, punch_ntheta=32, punch_ny=32, die_ntheta=32, die_ny=32),
+    (case_no=10, tag="m10", plate_nx=20, plate_ny=20, plate_nz=4, punch_ntheta=24, punch_ny=24, die_ntheta=24, die_ny=24),
+    (case_no=11, tag="m11", plate_nx=30, plate_ny=30, plate_nz=4, punch_ntheta=32, punch_ny=32, die_ntheta=32, die_ny=32),
 ]
 
 const SELECTED_STUDY_MESH_INDEX = 4
@@ -41,10 +48,10 @@ fmt_num(value::Real) = @sprintf("%.6g", Float64(value))
 fmt_case_no(value::Int) = @sprintf("%03d", value)
 
 function parse_kv_args(args::Vector{String})
-    kv = Dict{String, String}()
+    kv = Dict{String,String}()
     for arg in args
         occursin('=', arg) || error("All arguments must be key=value. Invalid: $arg")
-        key, value = split(arg, "=", limit = 2)
+        key, value = split(arg, "=", limit=2)
         kv[strip(key)] = strip(value)
     end
     return kv
@@ -77,26 +84,26 @@ function build_press_case_params(;
     press_time = abs(punch_disp_down) / punch_speed
     t_end = press_time + 0.2
 
-    return Pair{String, String}[
-        "case_name" => case_name,
-        "case_version" => case_version,
-        "case_keys" => "die_gap,punch_disp_down,punch_press_speed",
-        "die_gap" => fmt_num(die_gap),
-        "punch_disp_down" => fmt_num(punch_disp_down),
-        "punch_press_speed" => fmt_num(punch_speed),
-        "punch_final_disp" => fmt_num(punch_disp_down),
-        "t_end" => fmt_num(t_end),
-        "plate_nx" => string(mesh.plate_nx),
-        "plate_ny" => string(mesh.plate_ny),
-        "plate_nz" => string(mesh.plate_nz),
-        "punch_ntheta" => string(mesh.punch_ntheta),
-        "punch_ny" => string(mesh.punch_ny),
-        "die_ntheta" => string(mesh.die_ntheta),
-        "die_ny" => string(mesh.die_ny),
+    return Pair{String,String}[
+        "case_name"=>case_name,
+        "case_version"=>case_version,
+        "case_keys"=>"die_gap,punch_disp_down,punch_press_speed",
+        "die_gap"=>fmt_num(die_gap),
+        "punch_disp_down"=>fmt_num(punch_disp_down),
+        "punch_press_speed"=>fmt_num(punch_speed),
+        "punch_final_disp"=>fmt_num(punch_disp_down),
+        "t_end"=>fmt_num(t_end),
+        "plate_nx"=>string(mesh.plate_nx),
+        "plate_ny"=>string(mesh.plate_ny),
+        "plate_nz"=>string(mesh.plate_nz),
+        "punch_ntheta"=>string(mesh.punch_ntheta),
+        "punch_ny"=>string(mesh.punch_ny),
+        "die_ntheta"=>string(mesh.die_ntheta),
+        "die_ny"=>string(mesh.die_ny),
     ]
 end
 
-function write_case_script(path::String, params::Vector{Pair{String, String}})
+function write_case_script(path::String, params::Vector{Pair{String,String}})
     mkpath(dirname(path))
     open(path, "w") do io
         println(io, "#!/usr/bin/env julia")
@@ -144,12 +151,12 @@ function generate_mesh_convergence_cases()
         params = vcat(
             BASE_OVERRIDES,
             build_press_case_params(
-                case_name = case_name,
-                case_version = "v" * script_no,
-                mesh = mesh,
-                die_gap = 0.2,
-                punch_disp_down = -12.0,
-                punch_speed = 2.0,
+                case_name=case_name,
+                case_version="v" * script_no,
+                mesh=mesh,
+                die_gap=0.2,
+                punch_disp_down=-12.0,
+                punch_speed=2.0,
             ),
         )
         write_case_script(joinpath(MESH_SCRIPT_DIR, script_name), params)
@@ -193,12 +200,12 @@ function generate_parameter_study_cases(selected_mesh_tag::String)
                 params = vcat(
                     BASE_OVERRIDES,
                     build_press_case_params(
-                        case_name = case_name,
-                        case_version = "v" * script_no,
-                        mesh = selected_mesh,
-                        die_gap = die_gap,
-                        punch_disp_down = punch_disp_down,
-                        punch_speed = punch_speed,
+                        case_name=case_name,
+                        case_version="v" * script_no,
+                        mesh=selected_mesh,
+                        die_gap=die_gap,
+                        punch_disp_down=punch_disp_down,
+                        punch_speed=punch_speed,
                     ),
                 )
                 write_case_script(joinpath(PARAM_SCRIPT_DIR, script_name), params)
@@ -231,7 +238,7 @@ function generate_parameter_study_cases(selected_mesh_tag::String)
     )
 end
 
-function main(args::Vector{String} = ARGS)
+function main(args::Vector{String}=ARGS)
     kv = parse_kv_args(args)
     mode = lowercase(get(kv, "mode", "mesh"))
     selected_mesh_tag = get(kv, "selected_mesh", MESH_LEVELS[SELECTED_STUDY_MESH_INDEX].tag)
