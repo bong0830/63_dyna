@@ -9,19 +9,21 @@ rem   user_make_case_002.jl
 rem   ...
 
 set "ROOT=%~dp0"
-set "JULIA_EXE=C:\Users\user\.julia\juliaup\julia-1.12.5+0.x64.w64.mingw32\bin\julia.exe"
-set "SCRIPT_PREFIX=user_make_case_"
-set "SCRIPT_SUFFIX=.jl"
-set "START_NO=1"
-set "END_NO=3"
-set "PAD_WIDTH=3"
-set "STOP_ON_MISSING=1"
-set "STOP_ON_ERROR=1"
+if not defined SCRIPT_ROOT set "SCRIPT_ROOT=%ROOT%"
+if not defined JULIA_EXE set "JULIA_EXE=C:\Users\user\.julia\juliaup\julia-1.12.5+0.x64.w64.mingw32\bin\julia.exe"
+if not defined SCRIPT_PREFIX set "SCRIPT_PREFIX=user_make_case_"
+if not defined SCRIPT_SUFFIX set "SCRIPT_SUFFIX=.jl"
+if not defined START_NO set "START_NO=1"
+if not defined END_NO set "END_NO=3"
+if not defined PAD_WIDTH set "PAD_WIDTH=3"
+if not defined STOP_ON_MISSING set "STOP_ON_MISSING=1"
+if not defined STOP_ON_ERROR set "STOP_ON_ERROR=1"
 
 if not "%~1"=="" set "START_NO=%~1"
 if not "%~2"=="" set "END_NO=%~2"
 
 echo [INFO] Julia executable: %JULIA_EXE%
+echo [INFO] Script root: %SCRIPT_ROOT%
 echo [INFO] Script prefix: %SCRIPT_PREFIX%
 echo [INFO] Range: %START_NO% to %END_NO%
 echo.
@@ -29,7 +31,7 @@ echo.
 for /L %%N in (%START_NO%,1,%END_NO%) do (
     set "PADDED=000000%%N"
     set "CASE_NO=!PADDED:~-%PAD_WIDTH%!"
-    set "SCRIPT_PATH=%ROOT%!SCRIPT_PREFIX!!CASE_NO!!SCRIPT_SUFFIX!"
+    set "SCRIPT_PATH=%SCRIPT_ROOT%\!SCRIPT_PREFIX!!CASE_NO!!SCRIPT_SUFFIX!"
 
     if not exist "!SCRIPT_PATH!" (
         echo [ERROR] Script not found: !SCRIPT_PATH!

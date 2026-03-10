@@ -103,7 +103,9 @@
 사용 방법:
 
 - 배치 파일 상단의 `START_NO`, `END_NO`를 직접 수정한다.
+- 필요하면 `SCRIPT_ROOT`를 바꿔서 다른 스크립트 폴더를 가리킨다.
 - 또는 `run_user_case_range.bat 1 5` 처럼 시작 번호와 끝 번호를 인자로 넘긴다.
+- 고급 사용 시에는 환경변수 `SCRIPT_ROOT`, `SCRIPT_PREFIX`, `SCRIPT_SUFFIX` 를 먼저 주고 실행할 수도 있다.
 - Julia 경로가 다르면 `JULIA_EXE`를 수정한다.
 
 #### `run_lsrun_range.bat`
@@ -122,7 +124,38 @@
 - 예를 들어 `cases\user_case_001` 형식이면 `CASE_PREFIX=user_case_`, `CASE_SUFFIX=` 로 둔다.
 - 예를 들어 `cases\bend_force_v301_punchflex_setup` 형식이면 `CASE_PREFIX=bend_force_v`, `CASE_SUFFIX=_punchflex_setup` 로 맞춘다.
 - 또는 `run_lsrun_range.bat 1 5` 처럼 시작 번호와 끝 번호를 인자로 넘긴다.
+- 고급 사용 시에는 환경변수 `CASE_ROOT`, `CASE_PREFIX`, `CASE_SUFFIX` 를 먼저 주고 실행할 수도 있다.
 - 실제 실행 전에 확인만 하고 싶으면 `DRY_RUN=1`로 바꾼다.
+
+#### `generate_study_cases.jl`
+
+메쉬 수렴 테스트용 케이스와 100-case 파라미터 스터디용 번호형 사용자 스크립트를 자동 생성하는 스크립트다.
+
+생성 결과:
+
+- `study_scripts/mesh_convergence/meshconv_case_001.jl` ~ `meshconv_case_006.jl`
+- `study_scripts/param_study/study_case_001.jl` ~ `study_case_100.jl`
+- `study_plans/mesh_convergence_plan.csv`
+- `study_plans/parameter_study_plan.csv`
+
+기본 설계:
+
+- 메쉬 수렴 테스트는 6개 레벨(`m01`~`m06`)로 in-plane mesh, thickness mesh, tool mesh를 함께 키운다.
+- 파라미터 스터디는 `die_gap` 5수준 x `punch_disp_down` 5수준 x `punch_speed` 4수준 = 총 100개다.
+- 파라미터 스터디용 메쉬는 `SELECTED_STUDY_MESH_INDEX`로 지정하며 기본값은 `m04`다.
+- 현재 수렴/스터디 생성기 기본값은 `mass_scaling_dt=5e-06` 이다.
+- 기본 실행은 `mode=mesh` 로 메쉬 수렴 케이스만 만든다.
+- 수렴 결과를 확인한 뒤 `mode=study selected_mesh=m04` 같은 식으로 100-case study를 별도로 생성한다.
+
+#### `summarize_mesh_convergence.jl`
+
+메쉬 수렴 케이스 실행 결과를 요약하는 스크립트다.
+
+주요 역할:
+
+- `cases/meshconv_001` ~ `cases/meshconv_006` 의 `lsrun.out.txt`를 읽어 `finished`, `license_failed`, `failed`, `interrupted` 상태를 정리한다.
+- `rcforc`가 있으면 `master 1`의 최종 `z` 반력과 최대 절대 `z` 반력을 함께 정리한다.
+- 결과를 `study_plans/mesh_convergence_results.csv` 로 저장한다.
 
 #### `generate_mesh_kfiles.jl`
 

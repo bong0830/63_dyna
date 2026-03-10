@@ -1,0 +1,7 @@
+script_no,script_name,case_name,mesh_tag,plate_nx,plate_ny,plate_nz,punch_ntheta,punch_ny,die_ntheta,die_ny,die_gap,punch_disp_down,punch_speed
+001,meshconv_case_001.jl,meshconv_001,m01,10,10,1,16,16,16,16,0.2,-12.0,2.0
+002,meshconv_case_002.jl,meshconv_002,m02,14,14,1,20,20,20,20,0.2,-12.0,2.0
+003,meshconv_case_003.jl,meshconv_003,m03,18,18,2,24,24,24,24,0.2,-12.0,2.0
+004,meshconv_case_004.jl,meshconv_004,m04,24,24,2,28,28,28,28,0.2,-12.0,2.0
+005,meshconv_case_005.jl,meshconv_005,m05,30,30,3,32,30,32,30,0.2,-12.0,2.0
+006,meshconv_case_006.jl,meshconv_006,m06,36,36,4,36,36,36,36,0.2,-12.0,2.0
