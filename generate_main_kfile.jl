@@ -47,6 +47,8 @@ struct MainParams
     die_all_sid::Int
 end
 
+fmt(value::Real) = @sprintf("%.6g", Float64(value))
+
 function parse_args(args::Vector{String})
     kv = Dict{String, String}()
     for a in args
@@ -213,12 +215,12 @@ function write_curve(io::IO, cid::Int, t_down::Float64, t_hold_end::Float64, t_e
     println(io, "*DEFINE_CURVE")
     println(io, cid)
     println(io, "0.0,0.0")
-    println(io, "$(t_down),$(peak)")
+    println(io, "$(fmt(t_down)),$(fmt(peak))")
     if t_hold_end > t_down + tol && t_hold_end < t_end - tol
-        println(io, "$(t_hold_end),$(peak)")
+        println(io, "$(fmt(t_hold_end)),$(fmt(peak))")
     end
     if t_end > t_down + tol || abs(final - peak) > tol
-        println(io, "$(t_end),$(final)")
+        println(io, "$(fmt(t_end)),$(fmt(final))")
     end
 end
 
@@ -399,22 +401,22 @@ function write_main_kfile(path::String, p::MainParams)
 
         if p.mass_scaling_dt > 0.0
             println(io, "*CONTROL_TIMESTEP")
-            println(io, "0.0,0.9,0,0.0,-$(p.mass_scaling_dt),0,0,0")
+            println(io, "0.0,0.9,0,0.0,-$(fmt(p.mass_scaling_dt)),0,0,0")
         end
 
         println(io, "*CONTROL_TERMINATION")
-        println(io, t_end_curve)
+        println(io, fmt(t_end_curve))
         println(io, "*DATABASE_GLSTAT")
-        println(io, p.ascii_dt)
+        println(io, fmt(p.ascii_dt))
         println(io, "*DATABASE_MATSUM")
-        println(io, p.ascii_dt)
+        println(io, fmt(p.ascii_dt))
         println(io, "*DATABASE_RCFORC")
-        println(io, p.ascii_dt)
+        println(io, fmt(p.ascii_dt))
         println(io, "*DATABASE_NODOUT")
-        println(io, p.ascii_dt)
+        println(io, fmt(p.ascii_dt))
         write_history_nodes(io, p.history_node_ids)
         println(io, "*DATABASE_BINARY_D3PLOT")
-        println(io, p.d3plot_dt)
+        println(io, fmt(p.d3plot_dt))
         println(io, "*END")
     end
 end

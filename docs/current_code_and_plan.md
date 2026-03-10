@@ -141,6 +141,7 @@ explicit 가속용 옵션:
 - `mass_scaling_dt > 0`이면 `*CONTROL_TIMESTEP`가 추가된다.
 - `d3plot_dt`로 장시간 해석 시 결과 저장 간격을 완화할 수 있다.
 - `punch_hold_ratio`와 `punch_final_disp`로 `0 -> down -> hold -> final` 곡선을 만들 수 있다.
+- 해석 제어 시간/곡선 값은 compact 숫자 포맷으로 기록해 LS-DYNA 카드 필드 overflow를 피한다.
 
 주의사항:
 
