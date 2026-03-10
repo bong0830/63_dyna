@@ -72,6 +72,58 @@
 - 주요 geometry, mesh, material, loading, solver option이 한 줄에 기록된다.
 - `status` 컬럼으로 `generated`, `generated_no_run`, `finished` 상태를 추적한다.
 
+#### `user_make_case.jl`
+
+사용자가 직접 수정해서 실행하는 진입점이다.
+
+주요 역할:
+
+- 파일 안의 하드코딩된 파라미터 블록만 수정하면 된다.
+- `julia user_make_case.jl` 실행 시 내부적으로 `run_case.jl`를 호출한다.
+- VS Code REPL의 `include(...)` 기반 실행에서도 자동으로 생성이 시작되도록 구성한다.
+- 결과는 동일하게 `cases/<case_name>` 아래에 `00_main.k`, mesh, `lsruncommand.bat`, `case_info.txt`를 만든다.
+- 기본값은 `run=false`, `allow_existing=true` 라서 기존 케이스 폴더를 재사용하면서 입력 파일만 다시 생성하기 쉽다.
+
+사용 방법:
+
+- `case_name`을 직접 적으면 그 이름으로 폴더가 생성된다.
+- 자동 이름 규칙을 쓰고 싶으면 `case_name`을 빈 문자열로 바꾸고 `case_prefix`, `case_version`, `case_keys`를 수정한다.
+- 필요하면 `julia user_make_case.jl run=true` 같이 일부 값만 커맨드라인에서 덮어쓸 수도 있다.
+
+#### `run_user_case_range.bat`
+
+번호 범위를 지정해서 여러 사용자용 Julia 파일을 순차 실행하는 배치 파일이다.
+
+기본 규칙:
+
+- 스크립트 이름은 `user_make_case_001.jl`, `user_make_case_002.jl` 같이 번호를 붙인다.
+- 배치 파일은 `START_NO`부터 `END_NO`까지 1씩 증가시키며 해당 Julia 파일을 순서대로 실행한다.
+- 기본적으로 누락된 파일이나 실행 에러가 나오면 즉시 중단한다.
+
+사용 방법:
+
+- 배치 파일 상단의 `START_NO`, `END_NO`를 직접 수정한다.
+- 또는 `run_user_case_range.bat 1 5` 처럼 시작 번호와 끝 번호를 인자로 넘긴다.
+- Julia 경로가 다르면 `JULIA_EXE`를 수정한다.
+
+#### `run_lsrun_range.bat`
+
+이미 생성된 케이스 폴더들의 `lsruncommand.bat`를 번호 범위로 순차 실행하는 메인 배치 파일이다.
+
+기본 규칙:
+
+- 폴더 이름 규칙은 기본적으로 `cases\user_case_001`, `cases\user_case_002` 형태다.
+- 각 폴더 안의 `lsruncommand.bat`를 `call`로 순서대로 실행한다.
+- 누락된 폴더 또는 `lsruncommand.bat`가 있으면 기본적으로 즉시 중단한다.
+
+사용 방법:
+
+- 배치 파일 상단의 `CASE_ROOT`, `CASE_PREFIX`, `CASE_SUFFIX`, `START_NO`, `END_NO`를 수정한다.
+- 예를 들어 `cases\user_case_001` 형식이면 `CASE_PREFIX=user_case_`, `CASE_SUFFIX=` 로 둔다.
+- 예를 들어 `cases\bend_force_v301_punchflex_setup` 형식이면 `CASE_PREFIX=bend_force_v`, `CASE_SUFFIX=_punchflex_setup` 로 맞춘다.
+- 또는 `run_lsrun_range.bat 1 5` 처럼 시작 번호와 끝 번호를 인자로 넘긴다.
+- 실제 실행 전에 확인만 하고 싶으면 `DRY_RUN=1`로 바꾼다.
+
 #### `generate_mesh_kfiles.jl`
 
 메쉬 파일 생성 스크립트다.

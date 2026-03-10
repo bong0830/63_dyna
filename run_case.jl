@@ -503,8 +503,8 @@ function detect_analysis_status(case_dir::String)
     return "interrupted"
 end
 
-function main()
-    kv = parse_kv_args(ARGS)
+function run_case(args::Vector{String} = ARGS)
+    kv = parse_kv_args(args)
 
     case_name = build_case_name(kv)
     case_keys = split_csv(gets(kv, "case_keys", join(DEFAULT_CASE_KEYS, ",")))
@@ -520,7 +520,7 @@ function main()
 
     ensure_case_dir(case_dir, allow_existing)
 
-    generation_args = build_generation_args(ARGS, case_dir)
+    generation_args = build_generation_args(args, case_dir)
     run_generator("generate_mesh_kfiles.jl", generation_args)
     run_generator("generate_main_kfile.jl", generation_args)
 
@@ -560,5 +560,5 @@ function main()
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    main()
+    run_case()
 end
