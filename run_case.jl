@@ -31,16 +31,26 @@ const MANIFEST_COLUMNS = [
     "plate_nx",
     "plate_ny",
     "plate_nz",
+    "plate_elform",
     "punch_ntheta",
     "punch_ny",
     "die_ntheta",
     "die_ny",
     "t_end",
+    "punch_control_mode",
     "punch_disp_down",
+    "punch_press_speed",
+    "punch_release_speed",
+    "punch_hold_time",
+    "punch_press_time",
+    "punch_release_time",
     "punch_down_ratio",
     "punch_hold_ratio",
     "punch_final_disp",
+    "punch_force_peak",
+    "punch_force_final",
     "d3plot_dt",
+    "ascii_dt",
     "fs",
     "fd",
     "plate_rho",
@@ -49,6 +59,15 @@ const MANIFEST_COLUMNS = [
     "plate_sigy",
     "plate_etan",
     "plate_beta",
+    "gravity_z",
+    "punch_rho",
+    "punch_e",
+    "punch_nu",
+    "punch_rigid",
+    "die_rho",
+    "die_e",
+    "die_nu",
+    "die_rigid",
     "tool_rho",
     "tool_e",
     "tool_nu",
@@ -72,15 +91,25 @@ const DEFAULT_VALUES = Dict(
     "die_gap" => "0.2",
     "tool_shell_t" => "2.0",
     "t_end" => "0.01",
+    "punch_control_mode" => "disp",
+    "punch_press_speed" => "0.0",
+    "punch_release_speed" => "0.0",
+    "punch_hold_time" => "0.0",
+    "punch_press_time" => "0.0",
+    "punch_release_time" => "0.0",
     "punch_down_ratio" => "0.5",
     "punch_hold_ratio" => "0.0",
     "punch_final_disp" => "0.0",
+    "punch_force_peak" => "-100.0",
+    "punch_force_final" => "0.0",
     "d3plot_dt" => "1.0e-4",
+    "ascii_dt" => "1.0e-4",
     "fs" => "0.10",
     "fd" => "0.08",
     "plate_nx" => "30",
     "plate_ny" => "30",
     "plate_nz" => "3",
+    "plate_elform" => "2",
     "punch_ntheta" => "24",
     "punch_ny" => "30",
     "die_ntheta" => "24",
@@ -91,6 +120,15 @@ const DEFAULT_VALUES = Dict(
     "plate_sigy" => "350.0",
     "plate_etan" => "1200.0",
     "plate_beta" => "0.0",
+    "gravity_z" => "0.0",
+    "punch_rho" => "7.85e-9",
+    "punch_e" => "2.10e8",
+    "punch_nu" => "0.30",
+    "punch_rigid" => "false",
+    "die_rho" => "7.85e-9",
+    "die_e" => "2.10e8",
+    "die_nu" => "0.30",
+    "die_rigid" => "false",
     "tool_rho" => "7.85e-9",
     "tool_e" => "2.10e8",
     "tool_nu" => "0.30",
@@ -196,8 +234,26 @@ function resolve_case_value(kv::Dict{String, String}, key::String)
         return sanitize_case_name(gets(kv, "case_version", gets(kv, "main_version", "v001")))
     end
 
+    legacy_tool_map = Dict(
+        "punch_rho" => "tool_rho",
+        "punch_e" => "tool_e",
+        "punch_nu" => "tool_nu",
+        "punch_rigid" => "tool_rigid",
+        "die_rho" => "tool_rho",
+        "die_e" => "tool_e",
+        "die_nu" => "tool_nu",
+        "die_rigid" => "tool_rigid",
+    )
+
     if haskey(kv, key)
         return normalize_value_string(kv[key])
+    end
+
+    if haskey(legacy_tool_map, key)
+        legacy_key = legacy_tool_map[key]
+        if haskey(kv, legacy_key)
+            return normalize_value_string(kv[legacy_key])
+        end
     end
 
     if key == "die_d" && haskey(kv, "die_opening_r")
@@ -436,7 +492,7 @@ function detect_analysis_status(case_dir::String)
     output_text = lowercase(read(output_path, String))
     any(marker -> occursin(lowercase(marker), output_text), ERROR_TERMINATION_MARKERS) && return "failed"
     any(marker -> occursin(lowercase(marker), output_text), NORMAL_TERMINATION_MARKERS) && return "finished"
-    return "finished_unknown"
+    return "interrupted"
 end
 
 function main()

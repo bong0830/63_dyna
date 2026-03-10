@@ -1,4 +1,5 @@
 .vscode/
+tmp_*/
 
 # Generated analysis case folders
 cases/*/
