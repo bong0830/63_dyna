@@ -144,15 +144,15 @@ explicit 가속용 옵션:
 
 주의사항:
 
-- 현재 punch motion curve는 `0 -> down -> 0` 형태다.
-- 즉, `t_down`까지 하강한 뒤 `t_end`에서 다시 0 변위로 돌아온다.
-- 실제 밴딩 확인 목적이라면 "하강 후 유지"가 맞는지, "하강 후 복귀"가 맞는지 해석 목적에 맞춰 다시 점검해야 한다.
+- 실제 curve 형상은 `punch_hold_ratio`, `punch_final_disp`, `punch_press_time`, `punch_release_time`, `punch_press_speed`, `punch_release_speed` 조합에 따라 달라진다.
+- 즉, 현재 코드는 단순 `0 -> down -> 0`만 지원하는 상태가 아니라 `press -> hold -> release` 스케줄도 구성할 수 있다.
+- 문서나 해석 기록을 남길 때는 "현재 케이스가 어떤 schedule을 사용했는지"를 manifest와 함께 적어야 한다.
 
 ### 2.2 생성 결과 폴더
 
-#### `kfiles_split`
+#### `cases/<case_name>`
 
-현재 스크립트가 직접 생성하는 실행용 출력 폴더다.
+현재 스크립트가 직접 생성하는 실제 실행용 출력 폴더다.
 
 구성:
 
@@ -161,12 +161,16 @@ explicit 가속용 옵션:
 - `20_punch_mesh.k`
 - `30_die_mesh.k`
 - `lsruncommand.bat`
+- `case_info.txt`
+- LS-DYNA 실행 결과 파일들 (`d3plot`, `d3hsp`, `messag`, `lsrun.out.txt` 등)
 
 특징:
 
 - 현재 기준의 메인 workflow다.
+- `run_case.jl`이 케이스 폴더를 만들고 그 내부에 모든 입력/실행 파일을 생성한다.
 - boundary condition, contact, analysis control의 상당 부분이 `00_main.k` 안에 직접 들어간다.
-- `lsruncommand.bat`가 `00_main.k`를 기준으로 LS-DYNA를 실행한다.
+- `lsruncommand.bat`가 같은 케이스 폴더의 `00_main.k`를 기준으로 LS-DYNA를 실행한다.
+- `cases/case_manifest.csv`가 각 케이스 폴더와 파라미터를 인덱싱한다.
 
 #### `kfiles_out`
 
@@ -218,8 +222,8 @@ explicit 가속용 옵션:
 ## 4. 현재까지 확인한 내용
 
 - mesh generation flow와 main deck generation flow는 올바르게 연결돼 있다.
-- `kfiles_split`의 생성 파일은 현재 스크립트 로직과 일치한다.
-- batch file은 `kfiles_split/00_main.k`를 기준으로 LS-DYNA를 실행하도록 설정돼 있다.
+- 현재 실제 생성 대상은 `kfiles_split` 고정 폴더가 아니라 `cases/<case_name>` 폴더다.
+- batch file은 각 case 폴더의 `00_main.k`를 기준으로 LS-DYNA를 실행하도록 설정돼 있다.
 - 즉, 아래 기본 파이프라인은 이미 갖춰져 있다.
 
 `mesh generation -> main deck generation -> LS-DYNA run`
@@ -299,7 +303,7 @@ explicit 가속용 옵션:
 
 ## 6. 바로 다음 작업 제안
 
-1. 현재 `kfiles_split` 기준으로 LS-DYNA를 1회 실행한다.
+1. 현재 `cases/<case_name>` 기준으로 LS-DYNA를 1회 실행한다.
 2. `d3hsp`, `messag`, `lsrun.out.txt`를 확인한다.
 3. `d3plot`에서 실제 bending이 발생했는지 확인한다.
 4. 필요하면 punch motion curve 또는 boundary condition을 수정한다.
@@ -308,5 +312,69 @@ explicit 가속용 옵션:
 ## 7. 작업 메모
 
 - 현재 worktree에는 이미 사용자 변경이 있으므로 기존 변경은 보존해야 한다.
-- 현재 작업 기준 구조는 `kfiles_out`보다 `kfiles_split` 쪽으로 보는 것이 맞다.
+- 현재 작업 기준 구조는 `kfiles_out` 같은 레거시 템플릿보다 `run_case.jl -> cases/<case_name>` 흐름으로 보는 것이 맞다.
 - 이후 반복 해석을 자동화하려면 case별 output folder naming rule도 같이 정하는 것이 좋다.
+
+## 8. 문서 동기화 규칙
+
+- 코드 동작이 바뀌면 같은 작업에서 이 문서를 함께 갱신한다.
+- 특히 아래 항목이 바뀌면 문서 갱신을 필수로 본다.
+  - 실행 진입점과 기본 workflow
+  - 입력 파라미터 이름, 기본값, 허용 모드
+  - 생성 파일 구조와 산출물 위치
+  - manifest 컬럼, 상태값, 케이스 네이밍 규칙
+  - 해석 스케줄 규칙 (`disp`/`force`, hold/release, gravity, mass scaling 등)
+- 문서 내용은 "예전 구조 설명"보다 "현재 코드가 실제로 하는 일"을 우선한다.
+- `kfiles_out` 같은 레거시 자산은 유지 목적이 아니라면 현재 운영 경로로 오해되지 않게 명시한다.
+- 문서를 갱신할 때는 가능하면 코드 확인 근거를 남긴다.
+  - 예: 어떤 스크립트의 함수/인자/출력 파일을 기준으로 설명했는지
+
+## 9. 커밋 규칙
+
+- 코드 변경만 하지 말고, 그 변경이 사용자 동작이나 운영 규칙에 영향을 주면 관련 문서도 같은 커밋에 포함한다.
+- 커밋 메시지와 변경 기록에는 한국어 요약을 반드시 포함한다.
+- 커밋 메시지는 한 줄 제목만 끝내지 말고, 아래 내용을 추적 가능하게 남긴다.
+  - 변경: 무엇을 바꿨는지
+  - 이유: 왜 바꿨는지
+  - 검증: 어떤 명령으로 확인했는지
+  - 영향: 사용자/코드베이스 영향
+- 위 네 항목은 커밋 본문에 넣거나, PR/작업 기록 문서에 같은 형식으로 남겨도 된다. 다만 한국어 요약은 반드시 포함한다.
+- 문서만 수정한 커밋이어도 검증 항목은 비워두지 말고, 최소한 확인한 파일/명령을 적는다.
+
+권장 커밋 메시지 형식:
+
+```text
+<type>: <짧은 제목>
+
+한국어 요약: 한 줄 요약
+변경: 무엇을 바꿨는지
+이유: 왜 바꿨는지
+검증: 어떤 명령으로 확인했는지
+영향: 사용자/코드베이스 영향
+```
+
+예시:
+
+```text
+docs: sync current workflow and commit policy
+
+한국어 요약: 현재 코드 기준으로 문서와 작업 규칙을 동기화
+변경: cases 기반 실행 구조, 문서 동기화 규칙, 커밋 기록 규칙을 정리
+이유: 실제 운영 흐름과 문서 설명의 차이를 줄이고 변경 추적 형식을 통일하기 위해
+검증: Get-Content -Raw docs/current_code_and_plan.md
+영향: 이후 코드 변경 시 문서 누락과 커밋 기록 누락 가능성이 줄어듦
+```
+
+## 10. 작업 완료 후 확인 규칙
+
+- 모든 변경이 끝난 뒤에는 바로 작업을 종료하지 말고, 아래 두 선택지 중 무엇을 할지 사용자에게 먼저 확인한다.
+1. 변경내용 정리 및 문서 동기화, 커밋, 푸쉬
+2. 계속 진행
+- 위 질문은 매 작업 완료 시점마다 반복한다.
+- 1번을 선택하면 다음 순서로 진행한다.
+  - 변경내용 정리
+  - 관련 문서 동기화 확인
+  - 커밋
+  - 푸쉬
+- 2번을 선택하면 커밋/푸쉬를 보류하고 다음 작업을 계속 진행한다.
+- 사용자가 명시적으로 다른 지시를 주지 않은 이상, 작업 완료 후 마무리 단계에서 이 질문을 생략하지 않는다.
