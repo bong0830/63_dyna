@@ -10,3 +10,5 @@
     * m10: nz=4, nx=20, ny=20
     * m11: nz=4, nx=30, ny=30
   * `julia generate_study_cases.jl mode=mesh` 명령어를 실행하여 파라미터 연구용 스크립트 및 csv 플랜(`mesh_convergence_plan.csv`) 갱신 완료.
+  * `run_lsrun_sequence.bat` 배치 파일 생성 - 이미 생성된 `.k` 폴더들을 순회하며 내부에 있는 `lsruncommand.bat`만 순차적으로 연속 실행하는 독립형 범용 스크립트 구축.
+
