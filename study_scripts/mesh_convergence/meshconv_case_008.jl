@@ -3,7 +3,7 @@
 include(joinpath(@__DIR__, "..", "..", "user_make_case.jl"))
 
 run_user_case([
-    "run=false",
+    "run=true",
     "allow_existing=true",
     "cases_root=cases",
     "manifest_path=cases/case_manifest.csv",

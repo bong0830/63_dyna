@@ -8,7 +8,7 @@ const PARAM_SCRIPT_DIR = joinpath(ROOT, "study_scripts", "param_study")
 const PLAN_DIR = joinpath(ROOT, "study_plans")
 
 const BASE_OVERRIDES = Pair{String,String}[
-    "run"=>"false",
+    "run"=>"true",
     "allow_existing"=>"true",
     "cases_root"=>"cases",
     "manifest_path"=>"cases/case_manifest.csv",
