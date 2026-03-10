@@ -54,6 +54,7 @@
 - `punch_hold_ratio=...`: 최대 변위 도달 후 유지 시간 비율
 - `punch_final_disp=...`: 해석 종료 시 punch 최종 변위
 - `tool_shell_t=...`: punch/die shell 두께
+- `die_gap=...`: die를 x 방향으로 추가 이동시키는 gap
 - `tool_rigid=true|false`: punch/die를 `*MAT_RIGID`로 생성할지 지정
 - `mass_scaling_dt=...`: explicit mass scaling 목표 timestep 지정
 - `d3plot_dt=...`: d3plot 저장 간격 지정
@@ -132,12 +133,15 @@
 - d3plot interval: `1.0e-4`
 - friction: `fs=0.10`, `fd=0.08`
 - plate material: `*MAT_PLASTIC_KINEMATIC`
+  - `ro=7.85e-9`, `e=2.05e5`, `pr=0.28`, `sigy=245`, `etan=1500`, `beta=1.0`
+  - `src=40.4`, `srp=5.0`, `fs=0`, `vp=0`
 - tool material: `*MAT_ELASTIC`
 
 explicit 가속용 옵션:
 
 - `tool_rigid=true`이면 punch/die를 `*MAT_RIGID`로 기록할 수 있다.
 - `tool_shell_t`는 tool shell section 두께와 초기 tool 중심선 위치 계산에 함께 사용된다.
+- `die_gap`은 die의 z방향 이격이 아니라 x방향 추가 오프셋으로 해석한다.
 - `mass_scaling_dt > 0`이면 `*CONTROL_TIMESTEP`가 추가된다.
 - `d3plot_dt`로 장시간 해석 시 결과 저장 간격을 완화할 수 있다.
 - `punch_hold_ratio`와 `punch_final_disp`로 `0 -> down -> hold -> final` 곡선을 만들 수 있다.
@@ -292,6 +296,8 @@ explicit 가속용 옵션:
 - `fd`
 - `plate_sigy`
 - `plate_etan`
+- `plate_src`
+- `plate_srp`
 
 ### 5.3 반복 해석 권장 순서
 

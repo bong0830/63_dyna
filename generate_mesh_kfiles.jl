@@ -62,6 +62,7 @@ const PUNCH_ALL_SID = 20100
 const PUNCH_YSYM_SID = 20002
 const DIE_ALL_SID = 30100
 const DIE_YSYM_SID = 30002
+const DEFAULT_DIE_Z_GAP = 0.2
 
 function parse_args(args::Vector{String})
     kv = Dict{String, String}()
@@ -125,8 +126,9 @@ function validate(p::ModelParams)
 
     half_lx = p.plate_lx / 2.0
     (p.punch_x + p.punch_d / 2.0) <= half_lx || error("punch_x + punch_radius must be <= plate_lx/2 for quarter model")
-    (p.die_x + p.die_d / 2.0) <= half_lx || error("die_x + die_radius must be <= plate_lx/2 for quarter model")
-    (p.die_x - p.die_d / 2.0) >= 0.0 || error("die_x - die_radius must be >= 0 for quarter model")
+    effective_die_x = p.die_x + p.die_gap
+    (effective_die_x + p.die_d / 2.0) <= half_lx || error("(die_x + die_gap) + die_radius must be <= plate_lx/2 for quarter model")
+    (effective_die_x - p.die_d / 2.0) >= 0.0 || error("(die_x + die_gap) - die_radius must be >= 0 for quarter model")
 end
 
 function generate_plate_mesh(p::ModelParams, node_start::Int, elem_start::Int)
@@ -332,7 +334,8 @@ function generate_mesh_files(p::ModelParams)
 
     tool_half_t = p.tool_shell_t / 2.0
     punch_centerline_z = p.plate_t + p.punch_gap + tool_half_t + punch_r
-    die_centerline_z = -p.die_gap - tool_half_t - die_r
+    die_centerline_z = -DEFAULT_DIE_Z_GAP - tool_half_t - die_r
+    die_centerline_x = p.die_x + p.die_gap
 
     punch = generate_cylinder_shell_y(
         punch_r,
@@ -351,7 +354,7 @@ function generate_mesh_files(p::ModelParams)
 
     die = generate_cylinder_shell_y(
         die_r,
-        p.die_x,
+        die_centerline_x,
         yhalf,
         p.die_ntheta,
         p.die_ny,

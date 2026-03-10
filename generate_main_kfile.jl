@@ -29,6 +29,10 @@ struct MainParams
     plate_sigy::Float64
     plate_etan::Float64
     plate_beta::Float64
+    plate_src::Float64
+    plate_srp::Float64
+    plate_fs::Float64
+    plate_vp::Float64
     plate_elform::Int
     gravity_z::Float64
     punch_rho::Float64
@@ -95,10 +99,10 @@ function parse_args(args::Vector{String})
         getf("t_end", 0.010),
         getints("history_node_ids", [1_000_001]),
         getmode("punch_control_mode", "disp"),
-        getf("punch_disp_down", -6.0),
-        getf("punch_press_speed", 0.0),
-        getf("punch_release_speed", 0.0),
-        getf("punch_hold_time", 0.0),
+        getf("punch_disp_down", -12.0),
+        getf("punch_press_speed", 1.0),
+        getf("punch_release_speed", 1.0),
+        getf("punch_hold_time", 0.8),
         getf("punch_press_time", 0.0),
         getf("punch_release_time", 0.0),
         getf("punch_down_ratio", 0.5),
@@ -111,11 +115,15 @@ function parse_args(args::Vector{String})
         getf("fs", 0.10),
         getf("fd", 0.08),
         getf("plate_rho", 7.85e-9),
-        getf("plate_e", 210000.0),
-        getf("plate_nu", 0.30),
-        getf("plate_sigy", 350.0),
-        getf("plate_etan", 1200.0),
-        getf("plate_beta", 0.0),
+        getf("plate_e", 205000.0),
+        getf("plate_nu", 0.28),
+        getf("plate_sigy", 245.0),
+        getf("plate_etan", 1500.0),
+        getf("plate_beta", 1.0),
+        getf("plate_src", 40.4),
+        getf("plate_srp", 5.0),
+        getf("plate_fs", 0.0),
+        getf("plate_vp", 0.0),
         geti("plate_elform", 2),
         getf("gravity_z", 0.0),
         getffallback("punch_rho", "tool_rho", 7.85e-9),
@@ -337,8 +345,8 @@ function write_main_kfile(path::String, p::MainParams)
         println(io, "$(p.tool_shell_t),$(p.tool_shell_t),$(p.tool_shell_t),$(p.tool_shell_t)")
 
         println(io, "*MAT_PLASTIC_KINEMATIC")
-        println(io, "1,$(p.plate_rho),$(p.plate_e),$(p.plate_nu),$(p.plate_sigy),$(p.plate_etan),$(p.plate_beta)")
-        println(io, "0,0,0,0,0,0,0,0")
+        println(io, "1,$(fmt(p.plate_rho)),$(fmt(p.plate_e)),$(fmt(p.plate_nu)),$(fmt(p.plate_sigy)),$(fmt(p.plate_etan)),$(fmt(p.plate_beta))")
+        println(io, "$(fmt(p.plate_src)),$(fmt(p.plate_srp)),$(fmt(p.plate_fs)),$(fmt(p.plate_vp))")
         write_tool_material(io, 2, p.punch_rigid, p.punch_rho, p.punch_e, p.punch_nu)
         write_tool_material(io, 3, p.die_rigid, p.die_rho, p.die_e, p.die_nu)
 
@@ -434,7 +442,6 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     main()
 end
-
 
 
 
